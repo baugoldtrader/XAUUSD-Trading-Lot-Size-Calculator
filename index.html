@@ -1,777 +1,600 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XAUUSD Trading Calculator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XAUUSD Lot Size Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d1117;
+    --bg2:       #161b24;
+    --surface:   #1c2333;
+    --surface2:  #212840;
+    --border:    rgba(255,255,255,0.08);
+    --border2:   rgba(255,255,255,0.12);
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #16a085 50%, #27ae60 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+    --text:      #e6edf3;
+    --text-dim:  #8b949e;
+    --text-muted:#4a5568;
 
-        .calculator-container {
-            background: linear-gradient(135deg, #ffffff 0%, #f7f9fb 100%);
-            border-radius: 25px;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
-            padding: 40px;
-            max-width: 650px;
-            width: 100%;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
+    --blue:      #58a6ff;
+    --blue-bg:   rgba(88,166,255,0.10);
+    --blue-mid:  rgba(88,166,255,0.20);
 
-        h1 {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 32px;
-            font-weight: 800;
-        }
+    --green:     #3fb950;
+    --green-bg:  rgba(63,185,80,0.10);
+    --green-mid: rgba(63,185,80,0.20);
+    --green-dim: #2ea043;
 
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
+    --yellow:    #d29922;
+    --yellow-bg: rgba(210,153,34,0.10);
+    --yellow-mid:rgba(210,153,34,0.20);
+    --yellow-lt: #e3b341;
 
-        .live-price-section {
-            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
+    --red:       #f85149;
+    --red-bg:    rgba(248,81,73,0.10);
+    --red-mid:   rgba(248,81,73,0.20);
+    --red-dim:   #da3633;
 
-        .live-price-label {
-            color: #ecf0f1;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-        }
+    --magenta:     #e040fb;
+    --magenta-bg:  rgba(224,64,251,0.10);
+    --magenta-mid: rgba(224,64,251,0.20);
+    --magenta-dim: rgba(224,64,251,0.07);
 
-        .live-price-display {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
+    --white:     #ffffff;
+  }
 
-        .price-main {
-            display: flex;
-            justify-content: center;
-            align-items: baseline;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .price-symbol {
-            font-size: 20px;
-            color: #7f8c8d;
-            font-weight: 600;
-        }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    padding: 36px 20px;
+    background-image:
+      radial-gradient(ellipse at 15% 10%, rgba(88,166,255,0.06) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 85%, rgba(63,185,80,0.05) 0%, transparent 45%);
+  }
 
-        .price-value {
-            font-size: 42px;
-            font-weight: 800;
-            color: #2c3e50;
-            font-family: 'Courier New', monospace;
-        }
+  .container { max-width: 1800px; margin: 0 auto; }
 
-        .price-change {
-            font-size: 16px;
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
+  header { text-align: center; margin-bottom: 32px; animation: fadeIn 0.5s ease; }
 
-        .price-change.positive {
-            background: #d5f4e6;
-            color: #27ae60;
-        }
+  .header-badge {
+    display: inline-block;
+    background: var(--blue-bg);
+    border: 1px solid var(--blue-mid);
+    color: var(--blue);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.18em; padding: 4px 14px;
+    border-radius: 20px; margin-bottom: 12px; text-transform: uppercase;
+  }
 
-        .price-change.negative {
-            background: #fadbd8;
-            color: #e74c3c;
-        }
+  .symbol {
+    font-size: clamp(2rem, 5.5vw, 3.8rem);
+    font-weight: 700; color: var(--white);
+    letter-spacing: 0.02em; line-height: 1;
+  }
 
-        .price-details {
-            display: flex;
-            justify-content: space-around;
-            padding-top: 15px;
-            border-top: 2px solid #ecf0f1;
-        }
+  .symbol span { color: var(--blue); }
+  .subtitle { font-size: 0.92rem; color: var(--text-dim); margin-top: 7px; font-weight: 500; }
 
-        .price-detail-item {
-            text-align: center;
-        }
+  .divider-bar {
+    display: flex; height: 4px; border-radius: 4px;
+    overflow: hidden; margin: 18px auto 0; max-width: 360px;
+  }
+  .divider-bar span { flex: 1; }
 
-        .price-detail-label {
-            font-size: 11px;
-            color: #95a5a6;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
+  /* Controls */
+  .controls {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px; margin-bottom: 22px;
+    animation: slideUp 0.4s ease 0.05s both;
+  }
 
-        .price-detail-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #34495e;
-            font-family: 'Courier New', monospace;
-        }
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+  }
 
-        .price-loading {
-            color: #7f8c8d;
-            font-size: 14px;
-            padding: 20px;
-        }
+  .control-group { display: flex; flex-direction: column; gap: 7px; }
 
-        .price-source {
-            font-size: 10px;
-            color: #95a5a6;
-            margin-top: 8px;
-        }
+  label {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.08em; color: var(--text-dim); text-transform: uppercase;
+  }
 
-        .last-update {
-            font-size: 10px;
-            color: #95a5a6;
-            margin-top: 4px;
-        }
+  .input-wrap { position: relative; display: flex; align-items: center; }
 
-        .input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
+  .prefix {
+    position: absolute; left: 11px;
+    color: var(--yellow-lt); font-size: 0.95rem;
+    font-weight: 600; pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
 
-        .input-group {
-            margin-bottom: 0;
-        }
+  input[type="number"] {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--border2); border-radius: 8px;
+    padding: 10px 12px; color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem; font-weight: 600;
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+  }
 
-        label {
-            display: block;
-            color: #34495e;
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
+  input.has-prefix { padding-left: 26px; }
+  input[type="number"]:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
+  input[type="number"]::-webkit-inner-spin-button { opacity: 0; }
 
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #d5dbdb;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #ecf0f1;
-            font-weight: 600;
-            color: #2c3e50;
-        }
+  .input-highlight { border-color: rgba(210,153,34,0.5) !important; }
+  .input-highlight:focus { border-color: var(--yellow-lt) !important; box-shadow: 0 0 0 3px var(--yellow-bg) !important; }
 
-        input:focus {
-            outline: none;
-            border-color: #e74c3c;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
-            transform: translateY(-2px);
-        }
+  select {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--border2); border-radius: 8px;
+    padding: 10px 12px; color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem; font-weight: 600; outline: none; cursor: pointer;
+  }
 
-        .sync-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(22, 160, 133, 0.3);
-        }
+  /* Pills */
+  .risk-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 
-        .sync-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(22, 160, 133, 0.4);
-        }
+  .pill {
+    border-radius: 7px; padding: 6px 14px;
+    font-size: 0.85rem; font-weight: 600;
+    display: flex; align-items: center; gap: 7px; border: 1px solid;
+  }
 
-        .sync-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+  .pill-balance { background: var(--blue-bg);   border-color: var(--blue-mid);   color: var(--blue); }
+  .pill-price   { background: var(--yellow-bg);  border-color: var(--yellow-mid); color: var(--yellow-lt); }
+  .pill-3       { background: var(--green-bg);   border-color: var(--green-mid);  color: var(--green); }
+  .pill-5       { background: var(--yellow-bg);  border-color: var(--yellow-mid); color: var(--yellow-lt); }
+  .pill-10      { background: var(--magenta-bg);  border-color: var(--magenta-mid); color: var(--magenta); }
+  .pill-dir     { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-dim); }
 
-        .auto-refresh-info {
-            margin-top: 10px;
-            font-size: 11px;
-            color: #ecf0f1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
+  .pill-label { opacity: 0.7; font-weight: 500; font-size: 0.8rem; }
 
-        .refresh-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #27ae60;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
+  /* Table */
+  .table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    animation: slideUp 0.4s ease 0.1s both;
+  }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+  .table-header-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    background: var(--surface2); flex-wrap: wrap; gap: 10px;
+  }
 
-        .status-message {
-            margin-top: 10px;
-            font-size: 12px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+  .table-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
 
-        .status-message.success {
-            background: #d5f4e6;
-            color: #27ae60;
-            opacity: 1;
-        }
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    align-items: center; font-size: 0.8rem; color: var(--text-dim); font-weight: 500;
+  }
 
-        .status-message.error {
-            background: #fadbd8;
-            color: #e74c3c;
-            opacity: 1;
-        }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot  { width: 9px; height: 9px; border-radius: 2px; }
 
-        .calculate-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 30px;
-        }
+  .scroll-wrap { overflow-x: auto; }
 
-        .calculate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
-        }
+  table { width: 100%; border-collapse: collapse; min-width: 1400px; }
 
-        .calculate-btn:active {
-            transform: translateY(-1px);
-        }
+  thead tr.group-row th {
+    padding: 11px 10px;
+    font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    text-align: center; border-bottom: 1px solid var(--border);
+  }
 
-        .results-container {
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.5s ease;
-        }
+  thead tr.sub-row th {
+    padding: 7px 10px;
+    font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    text-align: center; white-space: nowrap;
+    border-bottom: 2px solid var(--border2); line-height: 1.4;
+  }
 
-        .results-container.show {
-            opacity: 1;
-            max-height: 500px;
-            margin-bottom: 25px;
-        }
+  thead tr.sub-row th:first-child { text-align: left; }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+  .sub-label  { display: block; font-size: 0.7rem; font-weight: 600; }
+  .sub-hint   { display: block; font-size: 0.58rem; font-weight: 400; opacity: 0.5; margin-top: 1px; }
 
-        .result-card {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.3);
-            transition: transform 0.3s ease;
-        }
+  /* Group header colors */
+  .g-sl  { background: var(--surface2) !important; color: var(--text-dim) !important; }
+  .g-3   { background: var(--green-bg)  !important; color: var(--green) !important; }
+  .g-5   { background: var(--yellow-bg) !important; color: var(--yellow-lt) !important; }
+  .g-10  { background: var(--magenta-bg) !important; color: var(--magenta) !important; }
 
-        .result-card:nth-child(2) {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.3);
-        }
+  /* Cell tints */
+  .bg-lots3  { background: rgba(63,185,80,0.07); }
+  .bg-loss3  { background: rgba(248,81,73,0.07); }
+  .bg-3tp    { background: rgba(63,185,80,0.05); }
 
-        .result-card.tp-card {
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
-        }
+  .bg-lots5  { background: rgba(210,153,34,0.07); }
+  .bg-loss5  { background: rgba(248,81,73,0.07); }
+  .bg-5tp    { background: rgba(210,153,34,0.05); }
 
-        .result-card.sl-card {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
-        }
+  .bg-lots10 { background: rgba(224,64,251,0.07); }
+  .bg-loss10 { background: rgba(224,64,251,0.12); }
+  .bg-10tp   { background: rgba(224,64,251,0.05); }
 
-        .result-card:hover {
-            transform: translateY(-5px);
-        }
+  /* Sub header colors */
+  .sh-3tp  { color: var(--green) !important; }
+  .sh-5tp  { color: var(--yellow-lt) !important; }
+  .sh-10tp { color: var(--magenta) !important; }
 
-        .result-label {
-            color: white;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.95;
-        }
+  .sep-left { border-left: 1px solid var(--border2) !important; }
 
-        .result-value {
-            color: white;
-            font-size: 28px;
-            font-weight: 800;
-            font-family: 'Courier New', monospace;
-        }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025) !important; }
+  tbody tr:nth-child(even) { background: rgba(255,255,255,0.015); }
 
-        .result-value.highlight {
-            font-size: 32px;
-        }
+  tbody td { padding: 0; text-align: center; white-space: nowrap; }
 
-        .result-sublabel {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            margin-top: 10px;
-            opacity: 0.98;
-        }
+  /* Cell layout */
+  .cell-inner {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 7px 9px; line-height: 1; gap: 2px;
+  }
 
-        .result-sublabel span {
-            font-family: 'Courier New', monospace;
-            font-weight: 800;
-            font-size: 20px;
-        }
+  .cell-val    { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 600; }
+  .cell-sub    { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 400; opacity: 0.6; }
+  .cell-amount { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 700; }
 
-        .info-text {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 12px;
-            border-left: 5px solid #3498db;
-            color: #2c3e50;
-            font-size: 13px;
-            line-height: 1.6;
-        }
+  /* SL first column */
+  tbody td:first-child { text-align: left; padding: 0; }
+  tbody td:first-child .cell-inner { align-items: flex-start; padding-left: 16px; }
+  tbody td:first-child .cell-val   { color: var(--blue); font-size: 1rem; font-weight: 700; }
 
-        .info-text strong {
-            color: #e74c3c;
-        }
+  @keyframes fadeIn  { from { opacity: 0; transform: translateY(-8px); }  to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-        .calculation-details {
-            background: #fef9e7;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 5px solid #f39c12;
-            margin-bottom: 25px;
-            font-size: 13px;
-            line-height: 1.8;
-            color: #2c3e50;
-        }
-
-        .calculation-details h3 {
-            color: #e67e22;
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .calc-step {
-            margin: 8px 0;
-            padding-left: 10px;
-        }
-
-        .calc-formula {
-            font-family: 'Courier New', monospace;
-            background: rgba(243, 156, 18, 0.1);
-            padding: 4px 8px;
-            border-radius: 4px;
-            display: inline-block;
-            margin: 4px 0;
-        }
-
-        @media (max-width: 768px) {
-            .calculator-container {
-                padding: 25px;
-            }
-
-            h1 {
-                font-size: 26px;
-            }
-
-            .input-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .price-value {
-                font-size: 32px;
-            }
-        }
-    </style>
+  footer {
+    text-align: center; margin-top: 20px;
+    font-size: 0.78rem; color: var(--text-muted);
+    letter-spacing: 0.05em; font-weight: 500;
+  }
+</style>
 </head>
 <body>
-    <div class="calculator-container">
-        <h1>XAUUSD Calculator</h1>
-        <p class="subtitle">Gold Trading Lot Size Calculator</p>
+<div class="container">
 
-        <!-- Live Price Widget -->
-        <div class="live-price-section">
-            <div class="live-price-label">📊 LIVE XAUUSD PRICE</div>
-            <div class="live-price-display" id="livePriceDisplay">
-                <div class="price-loading">Loading live price...</div>
-            </div>
-            <button class="sync-btn" onclick="syncPrice()" id="syncBtn">⚡ Sync Price to Calculator</button>
-            <div class="auto-refresh-info">
-                <span class="refresh-indicator"></span>
-                <span>Auto-refreshes every 30 seconds</span>
-            </div>
-            <div class="status-message" id="statusMessage"></div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-group">
-                <label for="balance">Current Balance ($)</label>
-                <input type="number" id="balance" value="100" step="0.01" min="0">
-            </div>
-
-            <div class="input-group">
-                <label for="price">Current XAUUSD Price</label>
-                <input type="number" id="price" value="4966.26" step="0.01" min="0">
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-group">
-                <label for="marginPercent">Margin Percentage (%)</label>
-                <input type="number" id="marginPercent" value="4" step="0.1" min="0" max="100">
-            </div>
-
-            <div class="input-group">
-                <label for="leverage">Leverage (1:X)</label>
-                <input type="number" id="leverage" value="2000" step="1" min="1">
-            </div>
-        </div>
-
-        <div class="input-row">
-            <div class="input-group">
-                <label for="tpPoints">TP (Points)</label>
-                <input type="number" id="tpPoints" value="2000" step="1" min="0">
-            </div>
-
-            <div class="input-group">
-                <label for="slPoints">SL (Points)</label>
-                <input type="number" id="slPoints" value="1000" step="1" min="0">
-            </div>
-        </div>
-
-        <button class="calculate-btn" onclick="calculate()">Calculate</button>
-
-        <div class="results-container" id="resultsContainer">
-            <div class="results-grid">
-                <div class="result-card">
-                    <div class="result-label">Margin Value</div>
-                    <div class="result-value" id="marginValue">$0.00</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Open Lot Size</div>
-                    <div class="result-value highlight" id="lotSize">0.00 lot</div>
-                </div>
-            </div>
-
-            <div class="results-grid" style="margin-top: 20px;">
-                <div class="result-card tp-card">
-                    <div class="result-label">TP Target Price</div>
-                    <div class="result-value" id="tpPrice">$0.00</div>
-                    <div class="result-sublabel">Profit: <span id="tpProfit">+$0.00</span></div>
-                </div>
-                <div class="result-card sl-card">
-                    <div class="result-label">SL Target Price</div>
-                    <div class="result-value" id="slPrice">$0.00</div>
-                    <div class="result-sublabel">Loss: <span id="slLoss">-$0.00</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="calculation-details" id="calculationDetails" style="display: none;">
-            <h3>📐 Calculation Breakdown</h3>
-            <div id="calcSteps"></div>
-        </div>
-
-        <div class="info-text">
-            <strong>Note:</strong> XAUUSD standard lot = 100 oz. Contract size per lot = Current Price × 100. Points: $1 = 100 points (1 point = $0.01). Adjust leverage as per your broker.
-        </div>
+  <header>
+    <div class="header-badge">⬛ Gold · Forex · Calculator</div>
+    <div class="symbol">XAU<span>/</span>USD</div>
+    <div class="subtitle">Lot Size &amp; Risk–Reward Calculator</div>
+    <div class="divider-bar">
+      <span style="background:#58a6ff"></span>
+      <span style="background:#3fb950"></span>
+      <span style="background:#d29922"></span>
+      <span style="background:#e040fb"></span>
+      <span style="background:rgba(255,255,255,0.2)"></span>
     </div>
+  </header>
 
-    <script>
-        let lastPrice = null;
-        let refreshInterval = null;
+  <div class="controls">
+    <div class="controls-grid">
+      <div class="control-group">
+        <label>Current Price (XAUUSD)</label>
+        <div class="input-wrap">
+          <input type="number" id="currentPrice" class="input-highlight" value="3300.00" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Account Balance</label>
+        <div class="input-wrap">
+          <span class="prefix">$</span>
+          <input type="number" id="balance" class="has-prefix" value="1000" min="1" step="100">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>SL Start (points)</label>
+        <div class="input-wrap">
+          <input type="number" id="slStart" value="500" min="1" step="100">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>SL End (points)</label>
+        <div class="input-wrap">
+          <input type="number" id="slEnd" value="1500" min="1" step="100">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>SL Step (points)</label>
+        <div class="input-wrap">
+          <input type="number" id="slStep" value="100" min="1" step="10">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Trade Direction</label>
+        <div class="input-wrap">
+          <select id="direction">
+            <option value="buy">📈 BUY (Long)</option>
+            <option value="sell">📉 SELL (Short)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="risk-pills" id="riskPills"></div>
+  </div>
 
-        async function fetchLivePrice() {
-            try {
-                const response = await fetch('https://data-asg.goldprice.org/dbXRates/USD');
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch price');
-                }
-                
-                const data = await response.json();
-                
-                if (data && data.items && data.items.length > 0) {
-                    const item = data.items[0];
-                    const price = parseFloat(item.xauPrice);
-                    const change = parseFloat(item.chgXau);
-                    const changePercent = parseFloat(item.pcXau);
-                    
-                    // Calculate bid/ask with typical spread (around 0.5)
-                    const spread = 0.50;
-                    const bid = price - (spread / 2);
-                    const ask = price + (spread / 2);
-                    
-                    lastPrice = price;
-                    
-                    // Format timestamp
-                    const now = new Date();
-                    const timeString = now.toLocaleString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        timeZoneName: 'short'
-                    });
-                    
-                    // Determine change class
-                    const changeClass = changePercent >= 0 ? 'positive' : 'negative';
-                    
-                    // Update display
-                    const displayHTML = `
-                        <div class="price-main">
-                            <span class="price-symbol">XAU/USD</span>
-                            <span class="price-value">${price.toFixed(2)}</span>
-                            <span class="price-change ${changeClass}">${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%</span>
-                        </div>
-                        <div class="price-details">
-                            <div class="price-detail-item">
-                                <div class="price-detail-label">Bid</div>
-                                <div class="price-detail-value">${bid.toFixed(2)}</div>
-                            </div>
-                            <div class="price-detail-item">
-                                <div class="price-detail-label">Spot</div>
-                                <div class="price-detail-value">${price.toFixed(2)}</div>
-                            </div>
-                            <div class="price-detail-item">
-                                <div class="price-detail-label">Ask</div>
-                                <div class="price-detail-value">${ask.toFixed(2)}</div>
-                            </div>
-                        </div>
-                        <div class="price-source">Live market data from GoldPrice.org</div>
-                        <div class="last-update">Last updated: ${timeString}</div>
-                    `;
-                    
-                    document.getElementById('livePriceDisplay').innerHTML = displayHTML;
-                    return price;
-                } else {
-                    throw new Error('Invalid data format');
-                }
-                
-            } catch (error) {
-                console.error('Error fetching price:', error);
-                document.getElementById('livePriceDisplay').innerHTML = '<div class="price-loading">Unable to load live price. Please enter manually.</div>';
-                return null;
-            }
-        }
+  <div class="table-wrap">
+    <div class="table-header-bar">
+      <div class="table-title">📊 Lot Size · Loss &amp; Profit Table</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div> 3% Risk</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div> 5% Risk</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e040fb"></div> 10% Risk</div>
+        <span style="color:#f85149">▼ Loss in SL</span>
+        <span style="color:#3fb950">▲ Profit in TP</span>
+      </div>
+    </div>
+    <div class="scroll-wrap">
+      <table>
+        <thead>
+          <tr class="group-row">
+            <th class="g-sl" rowspan="2">
+              <span class="sub-label">SL Distance</span>
+              <span class="sub-hint">pts · price</span>
+            </th>
+            <!-- 3%: 5 cols (Lots, Loss, TP1, TP2, TP3) -->
+            <th class="g-3" colspan="5">3% RISK — <span id="h3">$0</span></th>
+            <!-- 5%: 5 cols -->
+            <th class="g-5 sep-left" colspan="5">5% RISK — <span id="h5">$0</span></th>
+            <!-- 10%: 5 cols -->
+            <th class="g-10 sep-left" colspan="5">10% RISK — <span id="h10">$0</span></th>
+          </tr>
+          <tr class="sub-row">
+            <!-- 3% -->
+            <th class="bg-lots3" style="color:var(--green)">
+              <span class="sub-label">Lots</span>
+              <span class="sub-hint">size</span>
+            </th>
+            <th class="bg-loss3" style="color:var(--red)">
+              <span class="sub-label">Loss $</span>
+              <span class="sub-hint">at SL hit</span>
+            </th>
+            <th class="bg-3tp sh-3tp">
+              <span class="sub-label">TP1 (1:1)</span>
+              <span class="sub-hint" style="color:var(--green);opacity:1">Profit · Price</span>
+            </th>
+            <th class="bg-3tp sh-3tp">
+              <span class="sub-label">TP2 (1:2)</span>
+              <span class="sub-hint" style="color:var(--green);opacity:1">Profit · Price</span>
+            </th>
+            <th class="bg-3tp sh-3tp">
+              <span class="sub-label">TP3 (1:3)</span>
+              <span class="sub-hint" style="color:var(--green);opacity:1">Profit · Price</span>
+            </th>
+            <!-- 5% -->
+            <th class="bg-lots5 sep-left" style="color:var(--yellow-lt)">
+              <span class="sub-label">Lots</span>
+              <span class="sub-hint">size</span>
+            </th>
+            <th class="bg-loss5" style="color:var(--red)">
+              <span class="sub-label">Loss $</span>
+              <span class="sub-hint">at SL hit</span>
+            </th>
+            <th class="bg-5tp sh-5tp">
+              <span class="sub-label">TP1 (1:1)</span>
+              <span class="sub-hint" style="color:var(--yellow-lt);opacity:1">Profit · Price</span>
+            </th>
+            <th class="bg-5tp sh-5tp">
+              <span class="sub-label">TP2 (1:2)</span>
+              <span class="sub-hint" style="color:var(--yellow-lt);opacity:1">Profit · Price</span>
+            </th>
+            <th class="bg-5tp sh-5tp">
+              <span class="sub-label">TP3 (1:3)</span>
+              <span class="sub-hint" style="color:var(--yellow-lt);opacity:1">Profit · Price</span>
+            </th>
+            <!-- 10% -->
+            <th class="bg-lots10 sep-left" style="color:var(--magenta)">
+              <span class="sub-label">Lots</span>
+              <span class="sub-hint">size</span>
+            </th>
+            <th class="bg-loss10" style="color:var(--magenta)">
+              <span class="sub-label">Loss $</span>
+              <span class="sub-hint">at SL hit</span>
+            </th>
+            <th class="bg-10tp sh-10tp">
+              <span class="sub-label">TP1 (1:1)</span>
+              <span class="sub-hint" style="color:var(--magenta);opacity:1">Profit · Price</span>
+            </th>
+            <th class="bg-10tp sh-10tp">
+              <span class="sub-label">TP2 (1:2)</span>
+              <span class="sub-hint" style="color:var(--magenta);opacity:1">Profit · Price</span>
+            </th>
+            <th class="bg-10tp sh-10tp">
+              <span class="sub-label">TP3 (1:3)</span>
+              <span class="sub-hint" style="color:var(--magenta);opacity:1">Profit · Price</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-        async function syncPrice() {
-            const syncBtn = document.getElementById('syncBtn');
-            const statusMessage = document.getElementById('statusMessage');
-            const priceInput = document.getElementById('price');
-            
-            // Disable button during fetch
-            syncBtn.disabled = true;
-            syncBtn.textContent = '⏳ Syncing...';
-            statusMessage.className = 'status-message';
-            statusMessage.textContent = '';
-            
-            const price = await fetchLivePrice();
-            
-            if (price !== null) {
-                priceInput.value = price.toFixed(2);
-                statusMessage.className = 'status-message success';
-                statusMessage.textContent = `✓ Price synced to calculator: $${price.toFixed(2)}`;
-                
-                setTimeout(() => {
-                    statusMessage.className = 'status-message';
-                }, 3000);
-            } else {
-                statusMessage.className = 'status-message error';
-                statusMessage.textContent = '✗ Could not sync price. Please enter manually.';
-            }
-            
-            // Re-enable button
-            syncBtn.disabled = false;
-            syncBtn.textContent = '⚡ Sync Price to Calculator';
-        }
+  <footer>
+    XAUUSD &nbsp;·&nbsp; 1 lot = 100oz &nbsp;·&nbsp; $1/point/lot &nbsp;·&nbsp; Loss = Lots × SL pts &nbsp;·&nbsp; Profit = Lots × TP pts &nbsp;·&nbsp; For educational use only
+  </footer>
 
-        function calculate() {
-            // Get input values
-            const balance = parseFloat(document.getElementById('balance').value);
-            const price = parseFloat(document.getElementById('price').value);
-            const marginPercent = parseFloat(document.getElementById('marginPercent').value);
-            const leverage = parseFloat(document.getElementById('leverage').value);
-            const tpPoints = parseFloat(document.getElementById('tpPoints').value);
-            const slPoints = parseFloat(document.getElementById('slPoints').value);
+</div>
 
-            // Validate inputs
-            if (isNaN(balance) || isNaN(price) || isNaN(marginPercent) || isNaN(leverage)) {
-                alert('Please fill in all fields with valid numbers');
-                return;
-            }
+<script>
+  const POINT_SIZE = 0.01;
 
-            if (balance <= 0 || price <= 0 || marginPercent <= 0 || leverage <= 0) {
-                alert('All values must be greater than 0');
-                return;
-            }
+  function calcLot(balance, riskPct, slPoints) {
+    const riskAmt = balance * (riskPct / 100);
+    return Math.max(0.01, Math.floor((riskAmt / slPoints) * 100) / 100);
+  }
 
-            // CORRECTED CALCULATION
-            const contractSize = 100; // 100 oz per lot for XAUUSD
-            
-            // Step 1: Calculate available margin (percentage of balance you want to use)
-            const marginValue = (balance * marginPercent) / 100;
-            
-            // Step 2: Calculate margin required per lot
-            // Margin per lot = (Price × Contract Size) / Leverage
-            const marginPerLot = (price * contractSize) / leverage;
-            
-            // Step 3: Calculate lot size
-            // Lot Size = Available Margin / Margin per Lot
-            const lotSizeRaw = marginValue / marginPerLot;
-            
-            // Round down to 2 decimal places (floor)
-            const lotSize = Math.floor(lotSizeRaw * 100) / 100;
+  function calcLoss(lots, slPoints)   { return lots * slPoints * 1; }
+  function calcProfit(lots, tpPoints) { return lots * tpPoints * 1; }
 
-            // Calculate TP/SL
-            // In XAUUSD: $1 = 100 points, so 1 point = $0.01
-            const pointValue = 0.01; // 1 point = $0.01
-            const tpTargetPrice = price + (tpPoints * pointValue);
-            const slTargetPrice = price - (slPoints * pointValue);
-            
-            // Profit/Loss calculation
-            // P&L = Lot Size × Contract Size × Points × Point Value
-            const tpProfit = lotSize * contractSize * tpPoints * pointValue;
-            const slLoss = lotSize * contractSize * slPoints * pointValue;
+  function fmt(n)      { return n.toFixed(2); }
+  function fmtP(n)     { return n.toFixed(2); }
+  function fmtMoney(n) { return '$' + n.toFixed(2); }
 
-            // Create calculation breakdown
-            const calcStepsHTML = `
-                <div class="calc-step">
-                    <strong>Step 1:</strong> Available Margin<br>
-                    <span class="calc-formula">Margin Value = Balance × Margin %</span><br>
-                    <span class="calc-formula">= $${balance.toFixed(2)} × ${marginPercent}%</span><br>
-                    <span class="calc-formula">= $${marginValue.toFixed(2)}</span>
-                </div>
-                <div class="calc-step">
-                    <strong>Step 2:</strong> Margin Required Per Lot<br>
-                    <span class="calc-formula">Margin Per Lot = (Price × Contract Size) / Leverage</span><br>
-                    <span class="calc-formula">= ($${price.toFixed(2)} × ${contractSize}) / ${leverage}</span><br>
-                    <span class="calc-formula">= $${(price * contractSize).toFixed(2)} / ${leverage}</span><br>
-                    <span class="calc-formula">= $${marginPerLot.toFixed(2)}</span>
-                </div>
-                <div class="calc-step">
-                    <strong>Step 3:</strong> Calculate Lot Size<br>
-                    <span class="calc-formula">Lot Size = Available Margin / Margin Per Lot</span><br>
-                    <span class="calc-formula">= $${marginValue.toFixed(2)} / $${marginPerLot.toFixed(2)}</span><br>
-                    <span class="calc-formula">= ${lotSizeRaw.toFixed(4)} lot (before rounding)</span><br>
-                    <span class="calc-formula">= ${lotSize.toFixed(2)} lot (rounded down)</span>
-                </div>
-                <div class="calc-step">
-                    <strong>Step 4:</strong> TP/SL Calculation (1 point = $0.01)<br>
-                    <span class="calc-formula">TP Target = Entry + (TP Points × $0.01) = $${price.toFixed(2)} + (${tpPoints} × $0.01) = $${tpTargetPrice.toFixed(2)}</span><br>
-                    <span class="calc-formula">SL Target = Entry - (SL Points × $0.01) = $${price.toFixed(2)} - (${slPoints} × $0.01) = $${slTargetPrice.toFixed(2)}</span><br>
-                    <span class="calc-formula">TP Profit = ${lotSize.toFixed(2)} lot × ${contractSize} oz × ${tpPoints} pts × $0.01 = $${tpProfit.toFixed(2)}</span><br>
-                    <span class="calc-formula">SL Loss = ${lotSize.toFixed(2)} lot × ${contractSize} oz × ${slPoints} pts × $0.01 = $${slLoss.toFixed(2)}</span>
-                </div>
-                <div class="calc-step" style="margin-top: 10px; padding-top: 10px; border-top: 2px solid #f39c12;">
-                    <strong>Verification:</strong><br>
-                    <span class="calc-formula">Contract Value = ${lotSize.toFixed(2)} lot × ${contractSize} oz × $${price.toFixed(2)}</span><br>
-                    <span class="calc-formula">= $${(lotSize * contractSize * price).toFixed(2)}</span><br>
-                    <span class="calc-formula">Required Margin = $${(lotSize * contractSize * price / leverage).toFixed(2)}</span>
-                </div>
-            `;
+  function render() {
+    const price   = parseFloat(document.getElementById('currentPrice').value) || 0;
+    const balance = parseFloat(document.getElementById('balance').value)       || 1000;
+    const slStart = parseFloat(document.getElementById('slStart').value)       || 500;
+    const slEnd   = parseFloat(document.getElementById('slEnd').value)         || 1500;
+    const slStep  = parseFloat(document.getElementById('slStep').value)        || 100;
+    const isBuy   = document.getElementById('direction').value === 'buy';
 
-            document.getElementById('calcSteps').innerHTML = calcStepsHTML;
-            document.getElementById('calculationDetails').style.display = 'block';
+    const r3  = balance * 0.03;
+    const r5  = balance * 0.05;
+    const r10 = balance * 0.10;
 
-            // Display results
-            document.getElementById('marginValue').textContent = '$' + marginValue.toFixed(2);
-            document.getElementById('lotSize').textContent = lotSize.toFixed(2) + ' lot';
-            
-            // Display TP/SL results
-            document.getElementById('tpPrice').textContent = '$' + tpTargetPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('tpProfit').textContent = '+$' + tpProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('slPrice').textContent = '$' + slTargetPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('slLoss').textContent = '-$' + slLoss.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('h3').textContent  = fmtMoney(r3);
+    document.getElementById('h5').textContent  = fmtMoney(r5);
+    document.getElementById('h10').textContent = fmtMoney(r10);
 
-            // Show results
-            document.getElementById('resultsContainer').classList.add('show');
-        }
+    document.getElementById('riskPills').innerHTML = `
+      <div class="pill pill-balance"><span class="pill-label">Balance</span><span>${fmtMoney(balance)}</span></div>
+      ${price > 0 ? `<div class="pill pill-price"><span class="pill-label">Entry</span><span>${fmtP(price)}</span></div>` : ''}
+      <div class="pill pill-3"><span class="pill-label">3% Risk</span><span>${fmtMoney(r3)}</span></div>
+      <div class="pill pill-5"><span class="pill-label">5% Risk</span><span>${fmtMoney(r5)}</span></div>
+      <div class="pill pill-10"><span class="pill-label">10% Risk</span><span>${fmtMoney(r10)}</span></div>
+      <div class="pill pill-dir"><span class="pill-label">Direction</span><span style="color:${isBuy?'var(--green)':'var(--red)'}">${isBuy ? '📈 BUY' : '📉 SELL'}</span></div>
+    `;
 
-        // Allow Enter key to calculate
-        document.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                calculate();
-            }
-        });
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
 
-        // Initial price fetch and start auto-refresh
-        window.addEventListener('load', function() {
-            fetchLivePrice();
-            
-            // Auto-refresh every 30 seconds
-            refreshInterval = setInterval(fetchLivePrice, 30000);
-        });
+    for (let sl = slStart; sl <= slEnd; sl += slStep) {
+      const l3  = calcLot(balance, 3,  sl);
+      const l5  = calcLot(balance, 5,  sl);
+      const l10 = calcLot(balance, 10, sl);
 
-        // Clean up interval when page is closed
-        window.addEventListener('beforeunload', function() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-        });
-    </script>
+      const slDelta = sl * POINT_SIZE;
+
+      const slPrice  = price > 0 ? (isBuy ? price - slDelta       : price + slDelta)       : null;
+      const tp1Price = price > 0 ? (isBuy ? price + slDelta * 1   : price - slDelta * 1)   : null;
+      const tp2Price = price > 0 ? (isBuy ? price + slDelta * 2   : price - slDelta * 2)   : null;
+      const tp3Price = price > 0 ? (isBuy ? price + slDelta * 3   : price - slDelta * 3)   : null;
+
+      const loss3  = calcLoss(l3,  sl);
+      const loss5  = calcLoss(l5,  sl);
+      const loss10 = calcLoss(l10, sl);
+
+      const profit3_1  = calcProfit(l3,  sl * 1);
+      const profit3_2  = calcProfit(l3,  sl * 2);
+      const profit3_3  = calcProfit(l3,  sl * 3);
+
+      const profit5_1  = calcProfit(l5,  sl * 1);
+      const profit5_2  = calcProfit(l5,  sl * 2);
+      const profit5_3  = calcProfit(l5,  sl * 3);
+
+      const profit10_1 = calcProfit(l10, sl * 1);
+      const profit10_2 = calcProfit(l10, sl * 2);
+      const profit10_3 = calcProfit(l10, sl * 3);
+
+      const priceSub = (v) => v !== null ? `<span class="cell-sub">${fmtP(v)}</span>` : '';
+
+      // pts in dim/muted tone, profit in accent color, price in sub
+      const profitCell = (pts, profit, priceVal, color) => `
+        <td class="bg-3tp">
+          <div class="cell-inner">
+            <span class="cell-val" style="color:var(--text-dim)">${pts}</span>
+            <span class="cell-amount" style="color:${color}">+${fmtMoney(profit)}</span>
+            ${priceSub(priceVal)}
+          </div>
+        </td>`;
+
+      const profitCell5 = (pts, profit, priceVal, color) => `
+        <td class="bg-5tp">
+          <div class="cell-inner">
+            <span class="cell-val" style="color:var(--text-dim)">${pts}</span>
+            <span class="cell-amount" style="color:${color}">+${fmtMoney(profit)}</span>
+            ${priceSub(priceVal)}
+          </div>
+        </td>`;
+
+      const profitCell10 = (pts, profit, priceVal, color) => `
+        <td class="bg-10tp">
+          <div class="cell-inner">
+            <span class="cell-val" style="color:var(--text-dim)">${pts}</span>
+            <span class="cell-amount" style="color:${color}">+${fmtMoney(profit)}</span>
+            ${priceSub(priceVal)}
+          </div>
+        </td>`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <!-- SL Distance column -->
+        <td>
+          <div class="cell-inner">
+            <span class="cell-val">${sl}</span>
+            ${priceSub(slPrice)}
+          </div>
+        </td>
+
+        <!-- 3% Lots -->
+        <td class="bg-lots3">
+          <div class="cell-inner">
+            <span class="cell-val" style="color:var(--green)">${fmt(l3)}</span>
+          </div>
+        </td>
+        <!-- 3% Loss -->
+        <td class="bg-loss3">
+          <div class="cell-inner">
+            <span class="cell-amount" style="color:var(--red)">-${fmtMoney(loss3)}</span>
+          </div>
+        </td>
+        ${profitCell(sl,     profit3_1, tp1Price, 'var(--green)')}
+        ${profitCell(sl*2,   profit3_2, tp2Price, 'var(--green)')}
+        ${profitCell(sl*3,   profit3_3, tp3Price, 'var(--green)')}
+
+        <!-- 5% Lots -->
+        <td class="bg-lots5 sep-left">
+          <div class="cell-inner">
+            <span class="cell-val" style="color:var(--yellow-lt)">${fmt(l5)}</span>
+          </div>
+        </td>
+        <!-- 5% Loss -->
+        <td class="bg-loss5">
+          <div class="cell-inner">
+            <span class="cell-amount" style="color:var(--red)">-${fmtMoney(loss5)}</span>
+          </div>
+        </td>
+        ${profitCell5(sl,   profit5_1, tp1Price, 'var(--yellow-lt)')}
+        ${profitCell5(sl*2, profit5_2, tp2Price, 'var(--yellow-lt)')}
+        ${profitCell5(sl*3, profit5_3, tp3Price, 'var(--yellow-lt)')}
+
+        <!-- 10% Lots -->
+        <td class="bg-lots10 sep-left">
+          <div class="cell-inner">
+            <span class="cell-val" style="color:var(--magenta)">${fmt(l10)}</span>
+          </div>
+        </td>
+        <!-- 10% Loss -->
+        <td class="bg-loss10">
+          <div class="cell-inner">
+            <span class="cell-amount" style="color:var(--magenta)">-${fmtMoney(loss10)}</span>
+          </div>
+        </td>
+        ${profitCell10(sl,   profit10_1, tp1Price, 'var(--magenta)')}
+        ${profitCell10(sl*2, profit10_2, tp2Price, 'var(--magenta)')}
+        ${profitCell10(sl*3, profit10_3, tp3Price, 'var(--magenta)')}
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', render));
+  render();
+</script>
 </body>
 </html>
